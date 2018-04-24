@@ -218,7 +218,6 @@ const styles = StyleSheet.create({
     color: "#000",
     borderWidth: 2,
     borderColor: "#000",
-    marginTop: 10
   },
   speakerButton: {
     position: 'absolute',
@@ -232,6 +231,7 @@ const styles = StyleSheet.create({
     color: '#333333',
     marginTop: 15,
     marginBottom: 15,
+    marginLeft: 12,
   },
   stat: {
     textAlign: 'center',
