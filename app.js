@@ -32,7 +32,7 @@ export default class ListenRepeat extends Component {
 
   onSpeechStart(e) {
     this.setState({
-      started: '√',
+      started: '0',
     });
   }
 
@@ -73,19 +73,29 @@ export default class ListenRepeat extends Component {
   }
 
   async _startRecognizing(e) {
-    this.setState({
-      recognized: '',
-      pitch: '',
-      error: '',
-      started: '',
-      results: [],
-      partialResults: [],
-      end: ''
-    });
-    try {
-      await Voice.start('en-US');
-    } catch (e) {
-      console.error(e);
+    const started = this.state.started;
+    if (started == '0') {
+      this.setState({
+        recognized: '',
+        pitch: '',
+        error: '',
+        started: '1',
+        results: [],
+        partialResults: [],
+        end: ''
+      });
+      try {
+        await Voice.start('en-US');
+      } catch (e) {
+        console.error(e);
+      }
+    } else {
+      this.setState({started: '0'});
+      try {
+        await Voice.cancel();
+      } catch (e) {
+        console.error(e);
+      }
     }
   }
 
@@ -167,12 +177,14 @@ export default class ListenRepeat extends Component {
             )
           })}          
         </View>
-        <TouchableHighlight onPress={this._startRecognizing.bind(this)}>
-          <Image
-            style={styles.micButton}
-            source={require('./mic-button.png')}
-          />
-        </TouchableHighlight>
+        <View style={styles.footerBar}>
+          <TouchableHighlight onPress={this._startRecognizing.bind(this)} underlayColor="white">
+            <Image
+              style={styles.micButton}
+              source={require('./mic-button.png')}
+            />
+          </TouchableHighlight>
+        </View>
       </View>
     );
   }
@@ -184,7 +196,8 @@ const DEVICE_HEIGHT = Dimensions.get('window').height;
 const styles = StyleSheet.create({
   bodyContent: {
     alignItems: "center",
-    justifyContent: "center",
+    height: DEVICE_HEIGHT,
+    width: DEVICE_WIDTH,
   },
   header: {
     alignItems: "center",
@@ -238,7 +251,10 @@ const styles = StyleSheet.create({
     color: '#B0171F',
     marginBottom: 1,
   },
-
+  footerBar: {
+    position: 'absolute',
+    bottom: 0
+  },
   micButton: {
     alignItems: "center",
     width: 100,
