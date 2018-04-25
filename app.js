@@ -16,6 +16,8 @@ export default class ListenRepeat extends Component {
       started: '',
       results: [],
       partialResults: [],
+      userText: '',
+      resultText: '',
     };
     Voice.onSpeechStart = this.onSpeechStart.bind(this);
     Voice.onSpeechRecognized = this.onSpeechRecognized.bind(this);
@@ -24,6 +26,7 @@ export default class ListenRepeat extends Component {
     Voice.onSpeechResults = this.onSpeechResults.bind(this);
     Voice.onSpeechPartialResults = this.onSpeechPartialResults.bind(this);
     Voice.onSpeechVolumeChanged = this.onSpeechVolumeChanged.bind(this);
+    this.compareText = this.compareText.bind(this);
   }
 
   componentWillUnmount() {
@@ -82,7 +85,8 @@ export default class ListenRepeat extends Component {
         started: '1',
         results: [],
         partialResults: [],
-        end: ''
+        end: '',
+        resultText: '',
       });
       try {
         await Voice.start('en-US');
@@ -90,7 +94,7 @@ export default class ListenRepeat extends Component {
         console.error(e);
       }
     } else {
-      this.setState({started: '0'});
+      this.compareText();
       try {
         await Voice.cancel();
       } catch (e) {
@@ -132,6 +136,14 @@ export default class ListenRepeat extends Component {
     });
   }
 
+  compareText = () => {
+    let result_text =  this.state.results.map((result, index) => {
+      return result;
+    });
+    // let result_text = [ 'Who do you want to say' ];
+    this.setState({ started: '0', resultText: result_text });
+  }
+
   render() {
     return (
       <View style={styles.bodyContent}>
@@ -159,29 +171,45 @@ export default class ListenRepeat extends Component {
               style={styles.inputText}
               autoCapitalize="none"
               underlineColorAndroid='transparent'
-              value={this.state.confirm_password}
+              value={this.state.userText}
               onChangeText={value =>
-                this.setState({ confirm_password: value })
+                this.setState({ userText: value })
               }
             />
           <Text style={styles.instructions}>
             What they hear
           </Text>
-          {this.state.results.map((result, index) => {
-            return (
-              <Text
-                key={`result-${index}`}
-                style={styles.stat}>
-                {result}
-              </Text>
-            )
-          })}          
+          <Text style={styles.recordText}>
+            {(() => {
+                let result_text = [];
+                let text_color = '#22b14b';
+                let user_text = this.state.userText;
+                if (this.state.resultText && this.state.resultText[0]) {
+                  let result_obj = this.state.resultText[0].split(' ');
+                  for (let i=0; i<result_obj.length;i++) {
+                    text_color = user_text.search(result_obj[i])<0 ? '#f00' : '#22b14b';
+                    result_text.push(<Text key={`result-${i}`} style={{color: text_color}}>{result_obj[i]} </Text>);
+                  }
+                }
+                return result_text;
+              }
+            )()}
+          </Text>
         </View>
         <View style={styles.footerBar}>
+          {(() => {
+            if (this.state.started == '1')
+              return <Text style={styles.recordLabel}>Recording</Text>
+          })()}
           <TouchableHighlight onPress={this._startRecognizing.bind(this)} underlayColor="white">
-            <Image
+            <Image 
               style={styles.micButton}
-              source={require('./mic-button.png')}
+              source={(() => {
+                if (this.state.started == '1')
+                  return require('./record-button.png')
+                else
+                  return require('./mic-button.png')
+              })()}
             />
           </TouchableHighlight>
         </View>
@@ -221,7 +249,8 @@ const styles = StyleSheet.create({
     borderColor: "#ccc",
     marginLeft: 15,
     marginRight: 15,
-    width: DEVICE_WIDTH - 30
+    width: DEVICE_WIDTH - 30,
+    minHeight: DEVICE_HEIGHT - 210,
   },
   inputText: {
     height: 50,
@@ -246,29 +275,31 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     marginLeft: 12,
   },
-  stat: {
-    textAlign: 'center',
-    color: '#B0171F',
+  resultLabel: {
+    textAlign: 'left',
+    paddingLeft: 15,
+    paddingRight: 15,
+    color: '#22b14c',
     marginBottom: 1,
+  },
+  recordText: {
+    paddingLeft: 15,
+    fontSize: 18,
+    fontWeight: 'bold',
   },
   footerBar: {
     position: 'absolute',
     bottom: 0
   },
+  recordLabel: {
+    bottom: 20,
+    color: '#f42222',
+    fontSize: 12,
+  },
   micButton: {
     alignItems: "center",
-    width: 100,
-    height: 100,
-  },
-
-  button: {
-    width: 50,
-    height: 50,
-  },
-  action: {
-    textAlign: 'center',
-    color: '#0000FF',
-    marginVertical: 5,
-    fontWeight: 'bold',
+    width: 60,
+    height: 60,
+    bottom: 15,
   },
 });
