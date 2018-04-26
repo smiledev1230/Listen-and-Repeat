@@ -183,11 +183,11 @@ export default class ListenRepeat extends Component {
             {(() => {
                 let result_text = [];
                 let text_color = '#22b14b';
-                let user_text = this.state.userText;
+                let user_text = this.state.userText.toLowerCase();
                 if (this.state.resultText && this.state.resultText[0]) {
                   let result_obj = this.state.resultText[0].split(' ');
                   for (let i=0; i<result_obj.length;i++) {
-                    text_color = user_text.search(result_obj[i])<0 ? '#f00' : '#22b14b';
+                    text_color = user_text.search(result_obj[i].toLowerCase())<0 ? '#f00' : '#22b14b';
                     result_text.push(<Text key={`result-${i}`} style={{color: text_color}}>{result_obj[i]} </Text>);
                   }
                 }
