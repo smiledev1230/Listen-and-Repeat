@@ -97,9 +97,10 @@ export default class ListenRepeat extends Component {
       try {
         let result_text = this.state.results;
         // let result_text = [ 'Who do you want to say' ];
-        this.setState({ started: 0, resultText: result_text });
+        this.setState({ started: 2, resultText: result_text });
         await Voice.stop();
         await Voice.cancel();
+        this.setState({ started: 0 });
       } catch (e) {
         console.error(e);
       }
@@ -200,8 +201,10 @@ export default class ListenRepeat extends Component {
         </View>
         <View style={styles.footerBar}>
           {(() => {
-            if (this.state.started)
-              return <Text style={styles.recordLabel}>Recording</Text>
+            if (this.state.started) {
+              let processLabel = this.state.started == 1 ? 'Recording': 'Speech recognition in progress';
+              return <Text style={styles.recordLabel}>{processLabel}</Text>
+            }
           })()}
           <TouchableHighlight onPress={this._startRecognizing.bind(this)} underlayColor="white">
             <Image 
@@ -291,6 +294,7 @@ const styles = StyleSheet.create({
   },
   footerBar: {
     position: 'absolute',
+    alignItems: "center",
     bottom: 0
   },
   recordLabel: {
@@ -299,7 +303,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   micButton: {
-    alignItems: "center",
     width: 60,
     height: 60,
     bottom: 15,
