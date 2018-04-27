@@ -13,7 +13,7 @@ export default class ListenRepeat extends Component {
       pitch: '',
       error: '',
       end: '',
-      started: '',
+      started: 0,
       results: [],
       partialResults: [],
       userText: '',
@@ -35,7 +35,7 @@ export default class ListenRepeat extends Component {
 
   onSpeechStart(e) {
     this.setState({
-      started: '0',
+      started: 0,
     });
   }
 
@@ -77,12 +77,12 @@ export default class ListenRepeat extends Component {
 
   async _startRecognizing(e) {
     const started = this.state.started;
-    if (started == '0') {
+    if (!started) {
       this.setState({
         recognized: '',
         pitch: '',
         error: '',
-        started: '1',
+        started: 1,
         results: [],
         partialResults: [],
         end: '',
@@ -94,8 +94,11 @@ export default class ListenRepeat extends Component {
         console.error(e);
       }
     } else {
-      this.compareText();
       try {
+        let result_text = this.state.results;
+        // let result_text = [ 'Who do you want to say' ];
+        this.setState({ started: 0, resultText: result_text });
+        await Voice.stop();
         await Voice.cancel();
       } catch (e) {
         console.error(e);
@@ -129,7 +132,7 @@ export default class ListenRepeat extends Component {
       recognized: '',
       pitch: '',
       error: '',
-      started: '',
+      started: 0,
       results: [],
       partialResults: [],
       end: ''
@@ -140,8 +143,7 @@ export default class ListenRepeat extends Component {
     let result_text =  this.state.results.map((result, index) => {
       return result;
     });
-    // let result_text = [ 'Who do you want to say' ];
-    this.setState({ started: '0', resultText: result_text });
+    this.setState({ started: 0, resultText: result_text });
   }
 
   render() {
@@ -198,14 +200,14 @@ export default class ListenRepeat extends Component {
         </View>
         <View style={styles.footerBar}>
           {(() => {
-            if (this.state.started == '1')
+            if (this.state.started)
               return <Text style={styles.recordLabel}>Recording</Text>
           })()}
           <TouchableHighlight onPress={this._startRecognizing.bind(this)} underlayColor="white">
             <Image 
               style={styles.micButton}
               source={(() => {
-                if (this.state.started == '1')
+                if (this.state.started)
                   return require('./record-button.png')
                 else
                   return require('./mic-button.png')
