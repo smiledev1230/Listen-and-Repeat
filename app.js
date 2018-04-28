@@ -10,22 +10,17 @@ export default class ListenRepeat extends Component {
     super(props);
     this.state = {
       recognized: '',
-      pitch: '',
       error: '',
       end: '',
       started: 0,
       results: [],
-      partialResults: [],
       userText: '',
       resultText: '',
     };
     Voice.onSpeechStart = this.onSpeechStart.bind(this);
     Voice.onSpeechRecognized = this.onSpeechRecognized.bind(this);
     Voice.onSpeechEnd = this.onSpeechEnd.bind(this);
-    Voice.onSpeechError = this.onSpeechError.bind(this);
     Voice.onSpeechResults = this.onSpeechResults.bind(this);
-    Voice.onSpeechPartialResults = this.onSpeechPartialResults.bind(this);
-    Voice.onSpeechVolumeChanged = this.onSpeechVolumeChanged.bind(this);
     this.compareText = this.compareText.bind(this);
   }
 
@@ -47,13 +42,7 @@ export default class ListenRepeat extends Component {
 
   onSpeechEnd(e) {
     this.setState({
-      end: '√',
-    });
-  }
-
-  onSpeechError(e) {
-    this.setState({
-      error: JSON.stringify(e.error),
+      end: true,
     });
   }
 
@@ -63,46 +52,39 @@ export default class ListenRepeat extends Component {
     });
   }
 
-  onSpeechPartialResults(e) {
-    this.setState({
-      partialResults: e.value,
-    });
-  }
-
-  onSpeechVolumeChanged(e) {
-    this.setState({
-      pitch: e.value,
-    });
-  }
-
   async _startRecognizing(e) {
     const started = this.state.started;
     if (!started) {
       this.setState({
         recognized: '',
-        pitch: '',
         error: '',
         started: 1,
         results: [],
-        partialResults: [],
         end: '',
         resultText: '',
       });
       try {
-        await Voice.start('en-US');
-      } catch (e) {
-        console.error(e);
+        Voice.start('en-US');
+      } catch (err) {
+        console.error(err);
       }
     } else {
       try {
         let result_text = this.state.results;
         // let result_text = [ 'Who do you want to say' ];
-        this.setState({ started: 2, resultText: result_text });
-        await Voice.stop();
-        await Voice.cancel();
-        this.setState({ started: 0 });
-      } catch (e) {
-        console.error(e);
+        console.log(result_text)
+        this.setState({
+          recognized: '',
+          error: '',
+          started: 2,
+          results: [],
+          resultText: result_text,
+          end: ''
+        });
+        this._stopRecognizing(0);
+        this._cancelRecognizing(0);
+      } catch (err) {
+        console.error(err);
       }
     }
   }
@@ -110,24 +92,25 @@ export default class ListenRepeat extends Component {
   async _stopRecognizing(e) {
     try {
       await Voice.stop();
-    } catch (e) {
-      console.error(e);
+    } catch (err) {
+      console.error(err);
     }
   }
 
   async _cancelRecognizing(e) {
     try {
       await Voice.cancel();
-    } catch (e) {
-      console.error(e);
+      this.setState({ started: 0 });
+    } catch (err) {
+      console.error(err);
     }
   }
 
   async _destroyRecognizer(e) {
     try {
       await Voice.destroy();
-    } catch (e) {
-      console.error(e);
+    } catch (err) {
+      console.error(err);
     }
     this.setState({
       recognized: '',
